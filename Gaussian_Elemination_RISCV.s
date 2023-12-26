@@ -1,10 +1,16 @@
 .data
 mat:
-    .float -6.0, 4.0, 6.0, -8.0, -3.0, -50.0
-    .float -4.0, 3.0, 4.0, -4.0, -9.0, 11.0
-    .float -3.0, -1.0, -1.0, -6.0, 2.0, -29.0
-    .float -2.0, -4.0, 6.0, -5.0, 7.0, -53.0
-    .float -7.0, -9.0, -10.0, 5.0, 9.0, 12.0
+    #.float -6.0, 4.0, 6.0, -8.0, -3.0, -50.0
+    #.float -4.0, 3.0, 4.0, -4.0, -9.0, 11.0
+    #.float -3.0, -1.0, -1.0, -6.0, 2.0, -29.0
+    #.float -2.0, -4.0, 6.0, -5.0, 7.0, -53.0
+    #.float -7.0, -9.0, -10.0, 5.0, 9.0, 12.0
+
+    .float -1.73814987 -5.07453608  3.92269661  3.51961072 -0.8532691   9.79522992
+    .float 2.70229836  4.61691745 -5.13344567 -0.43486155 -3.37503902  2.09665076
+    .float 1.65280058  3.06072462  0.66675466  8.63330793  3.30891624  0.13825924
+    .float 8.40116914  5.36792354 -6.61292953  2.52192228 -9.2125116  -5.87816649
+    .float 7.48697683 -5.01620332 -5.22495532  3.89004942 -4.42061361 -6.22717652
 
 X:
     .float 0.0, 0.0, 0.0, 0.0, 0.0
@@ -176,6 +182,53 @@ gauss_elimination_done:
 
 outer_loop_done:
     li x21, 0                     # load i = 0
+    j print_row_echelonform
+
+print_row_echelonform:
+
+mat_i_loop:
+	#check if i<m
+   	bge x21, x1, done_i
+
+	#initialize j=0
+   	li x22, 0
+mat_j_loop:
+	#check if j<n
+   	bge x22, x2, done_j
+
+	# Calculate the address of matrix[i][j]
+   	mul x23, x21, x2              # i*6
+    add x23, x23, x22             # (i*6)+j
+    mul x23, x23, x3              # offset * ((i*6)+k) 
+    add x23, x23, x4              # B.A. + offset * ((i*6)+k)
+    flw f9, 0(x23)                # Load mat[i][k]: 0(x23) into f9
+
+	# Print hexadecimal value
+   	addi a0, x0, 34
+   	lw a1, 0(x23)
+   	ecall
+    
+	#print a tab
+   	addi a0, x0, 11
+   	addi a1, x0, 0x09
+   	ecall
+
+	# Increment j
+   	addi x22, x22, 1
+   	j mat_j_loop
+
+done_j:
+	# Print a newline
+   	addi a0, x0, 11	    # ASCII code for newline
+   	addi a1, x0, 10  	# Print character system call
+   	ecall
+    
+	# Increment i
+   	addi x21, x21, 1
+   	j mat_i_loop
+
+done_i:
+  	mv x8, x6                   # x8: i = m - 1
     j back_substitution
 
 back_substitution:
